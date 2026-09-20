@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>À propos des bannissements — G-SOCIETY</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f; --card:rgba(255,255,255,0.03); --border:rgba(201,182,228,0.12);
+        --brown:#d8bfa6; --violet:#c9b6e4; --text:#e0e0e0; --text-dim:#9a9aa5;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg); font-family:'Inter',sans-serif; color:var(--text); line-height:1.7;}
+  h1,h2{font-family:'Space Grotesk',sans-serif;}
+  header{padding:70px 24px 20px; text-align:center;}
+  header a.back{color:var(--text-dim); text-decoration:none; font-size:14px;}
+  header a.back:hover{color:var(--violet);}
+  header h1{font-size:clamp(1.8rem,5vw,2.4rem); margin-top:16px;
+    background:linear-gradient(120deg,#fff,#f0a3a3); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+  main{max-width:700px; margin:0 auto; padding:40px 24px 100px;}
+  .step{display:flex; gap:16px; margin-bottom:28px;}
+  .step .n{
+    flex-shrink:0; width:34px; height:34px; border-radius:50%; border:1px solid var(--border);
+    display:grid; place-items:center; color:var(--violet); font-size:14px; font-weight:600;
+  }
+  .step h2{font-size:16px; margin-bottom:6px;}
+  .step p{color:var(--text-dim); font-size:14.5px;}
+  .cta{margin-top:40px; padding:24px; background:var(--card); border:1px solid var(--border); border-radius:16px; text-align:center;}
+  .cta a{display:inline-block; margin-top:12px; padding:12px 22px; border-radius:9px;
+    background:linear-gradient(120deg,var(--brown),var(--violet)); color:#0a0a0f; text-decoration:none; font-weight:600;}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="back"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
+  <h1>À propos des bannissements</h1>
+</header>
+
+<main>
+
+  <div class="step">
+    <div class="n">1</div>
+    <div><h2>Pourquoi un compte peut être suspendu</h2>
+    <p>Non-respect des règles listées dans les <a href="/cgu" style="color:var(--violet);">conditions d'utilisation</a> : usage d'un script non officiel, harcèlement, contenu illégal, tentative d'exploitation technique.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="n">2</div>
+    <div><h2>Ce qui se passe concrètement</h2>
+    <p>Ton compte reçoit un message explicite à la prochaine tentative de connexion. Tu ne peux plus te connecter ni envoyer de messages tant que la suspension est active.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="n">3</div>
+    <div><h2>Demander un examen</h2>
+    <p>Toute suspension peut être contestée. Le délai de traitement annoncé est de 24h. Le contact se fait uniquement via la chaîne Telegram officielle — aucune autre voie n'est traitée.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="n">4</div>
+    <div><h2>Ce qui n'est pas affecté</h2>
+    <p>Un bannissement suspend le compte, pas les autres salons dont tu étais membre : si l'examen aboutit favorablement, ton accès est restauré, salons compris.</p></div>
+  </div>
+
+  <div class="cta">
+    <div>Besoin de contester une suspension ou de signaler une situation ?</div>
+    <a href="https://t.me/glitch_chanel" target="_blank" rel="noopener">Contacter via Telegram</a>
+  </div>
+
+</main>
+
+</body>
+</html>

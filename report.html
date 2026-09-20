@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signalements & clé API — G-SOCIETY</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f; --card:rgba(255,255,255,0.03); --border:rgba(201,182,228,0.14);
+        --brown:#d8bfa6; --violet:#c9b6e4; --text:#e0e0e0; --text-dim:#9a9aa5;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg); font-family:'Inter',sans-serif; color:var(--text); line-height:1.6;}
+  h1,h2{font-family:'Space Grotesk',sans-serif;}
+  header{padding:70px 24px 20px; text-align:center;}
+  header a.back{color:var(--text-dim); text-decoration:none; font-size:14px;}
+  header a.back:hover{color:var(--violet);}
+  header h1{font-size:clamp(1.8rem,5vw,2.4rem); margin-top:16px;
+    background:linear-gradient(120deg,#fff,var(--violet)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+
+  main{max-width:640px; margin:0 auto; padding:30px 24px 100px;}
+
+  .tabs{display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); overflow-x:auto;}
+  .tab{padding:12px 16px; color:var(--text-dim); cursor:pointer; font-size:14px; white-space:nowrap; border-bottom:2px solid transparent;}
+  .tab.active{color:#fff; border-color:var(--violet);}
+
+  .panel{display:none; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:28px;}
+  .panel.active{display:block;}
+  .panel p.desc{color:var(--text-dim); font-size:14px; margin-bottom:20px;}
+
+  label{display:block; font-size:13px; color:var(--text-dim); margin:14px 0 6px;}
+  input, select, textarea{
+    width:100%; padding:11px 14px; background:#14141c; border:1px solid var(--border);
+    border-radius:9px; color:var(--text); font-family:inherit; font-size:14px;
+  }
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--violet);}
+  textarea{resize:vertical; min-height:90px;}
+
+  button{
+    margin-top:20px; width:100%; padding:13px; border:none; border-radius:9px;
+    background:linear-gradient(120deg, var(--brown), var(--violet)); color:#0a0a0f;
+    font-weight:600; font-size:14.5px; cursor:pointer; transition:transform 0.15s;
+  }
+  button:hover{transform:translateY(-1px);}
+  button:disabled{opacity:0.5; cursor:not-allowed; transform:none;}
+
+  .result{margin-top:16px; padding:14px 16px; border-radius:9px; font-size:13.5px; display:none;}
+  .result.ok{display:block; background:rgba(95,217,122,0.08); border:1px solid rgba(95,217,122,0.3); color:#8ee8a4;}
+  .result.err{display:block; background:rgba(224,90,90,0.08); border:1px solid rgba(224,90,90,0.3); color:#f0a3a3;}
+  .apikey-box{
+    margin-top:14px; padding:14px; background:#14141c; border:1px dashed var(--violet);
+    border-radius:9px; font-family:monospace; font-size:13px; word-break:break-all; display:none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="back"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
+  <h1>Signalements & clé API</h1>
+</header>
+
+<main>
+  <div class="tabs">
+    <div class="tab active" data-tab="account">Compte G-SOCIETY</div>
+    <div class="tab" data-tab="key">Obtenir une clé API</div>
+    <div class="tab" data-tab="report">Signaler</div>
+    <div class="tab" data-tab="delete">Supprimer mon serveur</div>
+  </div>
+
+  <!-- Onglet : compte G-SOCIETY (préalable) -->
+  <div class="panel active" id="panel-account">
+    <p class="desc">Un compte G-SOCIETY est nécessaire avant de générer une clé — indépendant de ton pseudo GLITCH.</p>
+    <label>Nom de compte G-SOCIETY</label>
+    <input type="text" id="acc-username" placeholder="ton identifiant G-SOCIETY">
+    <label>Mot de passe</label>
+    <input type="password" id="acc-password" placeholder="••••••••">
+    <div style="display:flex; gap:10px; margin-top:16px;">
+      <button onclick="creerCompte()" style="margin-top:0;">Créer le compte</button>
+      <button onclick="connexionCompte()" style="margin-top:0; background:transparent; border:1px solid var(--border); color:var(--text);">Se connecter</button>
+    </div>
+    <div class="result" id="account-result"></div>
+  </div>
+
+  <!-- Onglet : clé API -->
+  <div class="panel" id="panel-key">
+    <p class="desc">Connecte-toi d'abord à ton compte G-SOCIETY (onglet précédent). Ta clé authentifie tes actions pour le service GLITCH — valable 90 jours max, strictement personnelle.</p>
+    <label>Nom de compte G-SOCIETY</label>
+    <input type="text" id="key-username" placeholder="ton identifiant G-SOCIETY">
+    <label>Mot de passe</label>
+    <input type="password" id="key-password" placeholder="••••••••">
+    <label>Durée de validité</label>
+    <select id="key-duree">
+      <option value="7">7 jours</option>
+      <option value="30">30 jours</option>
+      <option value="90" selected>90 jours (max)</option>
+    </select>
+    <button onclick="demanderCle()">Générer ma clé API (glitch)</button>
+    <div class="result" id="key-result"></div>
+    <div class="apikey-box" id="key-box"></div>
+  </div>
+
+  <!-- Onglet : signalement -->
+  <div class="panel" id="panel-report">
+    <p class="desc">Les signalements sont transmis uniquement à l'équipe — jamais visibles publiquement.</p>
+    <label>Ta clé API</label>
+    <input type="text" id="report-key" placeholder="ght_...">
+    <label>Ton pseudo GLITCH (pas ton compte G-SOCIETY)</label>
+    <input type="text" id="report-glitch-username" placeholder="pseudo utilisé dans le client">
+    <label>Type de signalement</label>
+    <select id="report-type">
+      <option value="user">Comportement d'un utilisateur</option>
+      <option value="bug">Bug / problème technique</option>
+    </select>
+    <label>Cible (pseudo concerné, si applicable)</label>
+    <input type="text" id="report-target" placeholder="optionnel">
+    <label>Motif</label>
+    <input type="text" id="report-motif" placeholder="résumé en une phrase">
+    <label>Détails</label>
+    <textarea id="report-details" placeholder="explique la situation"></textarea>
+    <button onclick="envoyerSignalement()">Envoyer le signalement</button>
+    <div class="result" id="report-result"></div>
+  </div>
+
+  <!-- Onglet : suppression de serveur -->
+  <div class="panel" id="panel-delete">
+    <p class="desc">La suppression est vérifiée automatiquement : seul le créateur (admin) du salon peut la déclencher. Action irréversible.</p>
+    <label>Ta clé API</label>
+    <input type="text" id="del-key" placeholder="ght_...">
+    <label>Ton pseudo GLITCH (doit être admin/créateur du salon)</label>
+    <input type="text" id="del-glitch-username" placeholder="pseudo utilisé dans le client">
+    <label>Nom du serveur à supprimer</label>
+    <input type="text" id="del-server" placeholder="nom exact du salon">
+    <label>Motif (optionnel)</label>
+    <input type="text" id="del-motif" placeholder="pourquoi tu le supprimes">
+    <button onclick="supprimerServeur()">Supprimer définitivement</button>
+    <div class="result" id="del-result"></div>
+  </div>
+</main>
+
+<script>
+// Pluton = le serveur central séparé (API + WebSocket GLITCH).
+// G-SOCIETY (ce site) n'est qu'un client qui lui parle par le réseau.
+const PLUTON_URL = "https://glitch-wbfo.onrender.com";
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+function afficherResultat(id, ok, message){
+  const el = document.getElementById(id);
+  el.className = 'result ' + (ok ? 'ok' : 'err');
+  el.textContent = message;
+}
+
+async function creerCompte(){
+  const username = document.getElementById('acc-username').value.trim();
+  const password = document.getElementById('acc-password').value;
+  if(!username || !password){ afficherResultat('account-result', false, "Remplis les deux champs."); return; }
+  try {
+    const res = await fetch(PLUTON_URL + '/api/gsociety/signup', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    afficherResultat('account-result', data.success, data.success ? data.message : data.error);
+  } catch(e){ afficherResultat('account-result', false, "Impossible de joindre le serveur."); }
+}
+
+async function connexionCompte(){
+  const username = document.getElementById('acc-username').value.trim();
+  const password = document.getElementById('acc-password').value;
+  if(!username || !password){ afficherResultat('account-result', false, "Remplis les deux champs."); return; }
+  try {
+    const res = await fetch(PLUTON_URL + '/api/gsociety/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    afficherResultat('account-result', data.success, data.success ? data.message + " — passe à l'onglet suivant." : data.error);
+  } catch(e){ afficherResultat('account-result', false, "Impossible de joindre le serveur."); }
+}
+
+async function demanderCle(){
+  const username = document.getElementById('key-username').value.trim();
+  const password = document.getElementById('key-password').value;
+  const duree_jours = parseInt(document.getElementById('key-duree').value, 10);
+  if(!username || !password){ afficherResultat('key-result', false, "Remplis pseudo et mot de passe."); return; }
+
+  try {
+    const res = await fetch(PLUTON_URL + '/api/request-key', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password, duree_jours})
+    });
+    const data = await res.json();
+    if(data.success){
+      afficherResultat('key-result', true, "Clé générée — copie-la maintenant, elle ne sera plus réaffichée.");
+      const box = document.getElementById('key-box');
+      box.style.display = 'block';
+      box.textContent = data.api_key;
+    } else {
+      afficherResultat('key-result', false, data.error || "Erreur inconnue.");
+    }
+  } catch(e){
+    afficherResultat('key-result', false, "Impossible de joindre le serveur.");
+  }
+}
+
+async function envoyerSignalement(){
+  const api_key = document.getElementById('report-key').value.trim();
+  const glitch_username = document.getElementById('report-glitch-username').value.trim();
+  const type = document.getElementById('report-type').value;
+  const target = document.getElementById('report-target').value.trim();
+  const motif = document.getElementById('report-motif').value.trim();
+  const details = document.getElementById('report-details').value.trim();
+  if(!api_key || !glitch_username || !motif){ afficherResultat('report-result', false, "Clé API, pseudo GLITCH et motif obligatoires."); return; }
+
+  try {
+    const res = await fetch(PLUTON_URL + '/api/report', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({api_key, glitch_username, type, target, motif, details})
+    });
+    const data = await res.json();
+    afficherResultat('report-result', data.success, data.success ? data.message : data.error);
+  } catch(e){
+    afficherResultat('report-result', false, "Impossible de joindre le serveur.");
+  }
+}
+
+async function supprimerServeur(){
+  const api_key = document.getElementById('del-key').value.trim();
+  const glitch_username = document.getElementById('del-glitch-username').value.trim();
+  const server_name = document.getElementById('del-server').value.trim();
+  const motif = document.getElementById('del-motif').value.trim();
+  if(!api_key || !glitch_username || !server_name){ afficherResultat('del-result', false, "Clé API, pseudo GLITCH et nom du serveur obligatoires."); return; }
+  if(!confirm(`Supprimer définitivement "${server_name}" ? Cette action est irréversible.`)) return;
+
+  try {
+    const res = await fetch(PLUTON_URL + '/api/delete-server', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({api_key, glitch_username, server_name, motif})
+    });
+    const data = await res.json();
+    afficherResultat('del-result', data.success, data.success ? data.message : data.error);
+  } catch(e){
+    afficherResultat('del-result', false, "Impossible de joindre le serveur.");
+  }
+}
+</script>
+
+</body>
+</html>
