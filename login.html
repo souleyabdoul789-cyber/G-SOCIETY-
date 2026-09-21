@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connexion — G-SOCIETY</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f; --card:rgba(255,255,255,0.03); --border:rgba(201,182,228,0.14);
+        --brown:#d8bfa6; --violet:#c9b6e4; --text:#e0e0e0; --text-dim:#9a9aa5;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg); font-family:'Inter',sans-serif; color:var(--text); min-height:100vh;
+       display:flex; align-items:center; justify-content:center; padding:24px;}
+  h1{font-family:'Space Grotesk',sans-serif;}
+
+  .box{width:100%; max-width:420px; background:var(--card); border:1px solid var(--border);
+       border-radius:18px; padding:32px 28px;}
+  .brand{text-align:center; font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:1.5px;
+    font-size:15px; margin-bottom:6px;
+    background:linear-gradient(90deg,var(--brown),var(--violet)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+  h1{font-size:1.4rem; text-align:center; margin-bottom:22px;}
+
+  label{display:block; font-size:13px; color:var(--text-dim); margin:14px 0 6px;}
+  input{width:100%; padding:11px 14px; background:#14141c; border:1px solid var(--border);
+    border-radius:9px; color:var(--text); font-family:inherit; font-size:14px;}
+  input:focus{outline:none; border-color:var(--violet);}
+
+  button{
+    margin-top:20px; width:100%; padding:13px; border:none; border-radius:9px;
+    background:linear-gradient(120deg, var(--brown), var(--violet)); color:#0a0a0f;
+    font-weight:600; font-size:14.5px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  }
+  button:hover:not(:disabled){transform:translateY(-2px); box-shadow:0 10px 26px rgba(201,182,228,0.28);}
+  button:active:not(:disabled){transform:translateY(0) scale(0.98);}
+  button:disabled{opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none;}
+
+  .spinner{width:16px; height:16px; border:2.5px solid rgba(10,10,15,0.3); border-top-color:#0a0a0f;
+    border-radius:50%; animation:spin 0.7s linear infinite; display:none;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  button.loading .spinner{display:inline-block;}
+  button.loading .btn-label{opacity:0.7;}
+
+  .switch-mode{text-align:center; margin-top:16px; font-size:13.5px; color:var(--text-dim);}
+  .switch-mode a{color:var(--violet); cursor:pointer; text-decoration:underline;}
+
+  .terms-line{display:flex; align-items:flex-start; gap:9px; margin-top:16px; font-size:12.5px; color:var(--text-dim);}
+  .terms-line input{width:auto; margin-top:2px;}
+  .terms-line a{color:var(--violet);}
+
+  .avatar-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:8px;}
+  .avatar-item{
+    aspect-ratio:1; border-radius:14px; border:2px solid var(--border); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; background:#14141c;
+    transition:border-color 0.15s, transform 0.15s;
+  }
+  .avatar-item:hover{transform:translateY(-2px);}
+  .avatar-item.selected{border-color:var(--violet); box-shadow:0 0 0 3px rgba(201,182,228,0.2);}
+  .avatar-item svg{width:80%; height:80%;}
+  .avatar-tilt{ transform-origin:12px 20px; animation: tilt 3.5s ease-in-out infinite; }
+  .avatar-eye{ animation: blink 4.5s ease-in-out infinite; transform-origin:center; }
+  @keyframes tilt{ 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(3deg);} }
+  @keyframes blink{ 0%,90%,100%{transform:scaleY(1);} 95%{transform:scaleY(0.15);} }
+
+  .result{margin-top:16px; padding:12px 14px; border-radius:9px; font-size:13.5px; display:none;}
+  .result.ok{display:block; background:rgba(95,217,122,0.08); border:1px solid rgba(95,217,122,0.3); color:#8ee8a4;}
+  .result.err{display:block; background:rgba(224,90,90,0.08); border:1px solid rgba(224,90,90,0.3); color:#f0a3a3;}
+
+  @media (max-width:420px){ .box{padding:24px 18px;} .avatar-grid{grid-template-columns:repeat(4,1fr);} }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <div class="brand">G-SOCIETY</div>
+
+  <!-- Connexion -->
+  <div id="mode-login">
+    <h1>Connexion</h1>
+    <label>Identifiant</label>
+    <input type="text" id="login-username" placeholder="votre identifiant">
+    <label>Mot de passe</label>
+    <input type="password" id="login-password" placeholder="••••••••">
+    <div class="terms-line">
+      <input type="checkbox" id="login-terms">
+      <label for="login-terms" style="margin:0;">J'accepte les <a href="cgu.html">conditions d'utilisation</a></label>
+    </div>
+    <button id="btn-login" onclick="connexion()" disabled>
+      <span class="spinner"></span><span class="btn-label">Se connecter</span>
+    </button>
+    <div class="switch-mode">Pas encore de compte ? <a onclick="basculer('signup')">En créer un</a></div>
+    <div class="result" id="login-result"></div>
+  </div>
+
+  <!-- Inscription -->
+  <div id="mode-signup" style="display:none;">
+    <h1>Créer un compte</h1>
+    <label>Identifiant</label>
+    <input type="text" id="signup-username" placeholder="choisissez un identifiant">
+    <label>Mot de passe</label>
+    <input type="password" id="signup-password" placeholder="••••••••">
+    <label>Confirmer le mot de passe</label>
+    <input type="password" id="signup-password-confirm" placeholder="••••••••">
+    <label>Avatar</label>
+    <div class="avatar-grid" id="avatar-grid"></div>
+    <div class="terms-line">
+      <input type="checkbox" id="signup-terms">
+      <label for="signup-terms" style="margin:0;">J'accepte les <a href="cgu.html">conditions d'utilisation</a></label>
+    </div>
+    <button id="btn-signup" onclick="inscription()" disabled>
+      <span class="spinner"></span><span class="btn-label">Créer mon compte</span>
+    </button>
+    <div class="switch-mode">Déjà un compte ? <a onclick="basculer('login')">Se connecter</a></div>
+    <div class="result" id="signup-result"></div>
+  </div>
+</div>
+
+<script>
+const PLUTON_URL = "https://glitch-wbfo.onrender.com";
+
+function basculer(mode){
+  document.getElementById('mode-login').style.display = mode === 'login' ? 'block' : 'none';
+  document.getElementById('mode-signup').style.display = mode === 'signup' ? 'block' : 'none';
+}
+
+function afficherResultat(id, ok, message){
+  const el = document.getElementById(id);
+  el.className = 'result ' + (ok ? 'ok' : 'err');
+  el.textContent = message;
+}
+
+function setChargement(btnId, actif){
+  const btn = document.getElementById(btnId);
+  btn.classList.toggle('loading', actif);
+  btn.disabled = actif;
+}
+
+// --- Avatars humains illustrés : 5 coiffures x 4 teintes = 20 ---
+const TEINTES = ['#e8c39e','#c68863','#8d5524','#f1d1b5'];
+const COIFFURES = [
+  (c)=>`<path d="M4 10 Q12 2 20 10 L20 8 Q12 3 4 8 Z" fill="${c}"/>`,
+  (c)=>`<path d="M3 15 Q2 6 12 5 Q22 6 21 15 L18 15 Q19 8 12 8 Q5 8 6 15 Z" fill="${c}"/>`,
+  (c)=>`<path d="M5 9 Q12 2 19 9 Z" fill="${c}"/><circle cx="12" cy="3" r="2" fill="${c}"/>`,
+  (c)=>`<circle cx="6" cy="8" r="2.4" fill="${c}"/><circle cx="10" cy="5.5" r="2.6" fill="${c}"/><circle cx="14" cy="5.5" r="2.6" fill="${c}"/><circle cx="18" cy="8" r="2.4" fill="${c}"/>`,
+  (c)=>``,
+];
+let avatarChoisi = null;
+
+function construireAvatars(){
+  const grid = document.getElementById('avatar-grid');
+  grid.innerHTML = '';
+  for(let i=0; i<20; i++){
+    const teinte = TEINTES[i % TEINTES.length];
+    const coiffure = COIFFURES[Math.floor(i / TEINTES.length) % COIFFURES.length];
+    const div = document.createElement('div');
+    div.className = 'avatar-item';
+    div.dataset.id = i + 1;
+    div.innerHTML = `
+      <svg viewBox="0 0 24 24" class="avatar-tilt">
+        <ellipse cx="12" cy="13" rx="7" ry="8" fill="${teinte}"/>
+        ${coiffure(['#2b1a12','#5c3a21','#1a1a1a','#7a5230'][Math.floor(i/4) % 4])}
+        <ellipse class="avatar-eye" cx="9.3" cy="13" rx="1" ry="1.3" fill="#241a14"/>
+        <ellipse class="avatar-eye" cx="14.7" cy="13" rx="1" ry="1.3" fill="#241a14"/>
+        <path d="M9.5 17 Q12 19 14.5 17" stroke="#241a14" stroke-width="1" fill="none" stroke-linecap="round"/>
+      </svg>`;
+    div.addEventListener('click', ()=>{
+      document.querySelectorAll('.avatar-item').forEach(a=>a.classList.remove('selected'));
+      div.classList.add('selected');
+      avatarChoisi = i + 1;
+      validerSignup();
+    });
+    grid.appendChild(div);
+  }
+}
+construireAvatars();
+
+document.getElementById('login-terms').addEventListener('change', function(){
+  document.getElementById('btn-login').disabled = !this.checked;
+});
+document.getElementById('signup-terms').addEventListener('change', validerSignup);
+function validerSignup(){
+  const ok = document.getElementById('signup-terms').checked && avatarChoisi !== null;
+  document.getElementById('btn-signup').disabled = !ok;
+}
+
+async function connexion(){
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if(!username || !password){ afficherResultat('login-result', false, "Identifiant et mot de passe requis."); return; }
+
+  setChargement('btn-login', true);
+  try {
+    const res = await fetch(PLUTON_URL + '/api/gsociety/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    if(data.success){
+      localStorage.setItem('gs_username', data.username);
+      localStorage.setItem('gs_avatar', data.avatar_id);
+      localStorage.setItem('gs_session', data.session_token);
+      window.location.href = "dashboard.html";
+    } else {
+      afficherResultat('login-result', false, data.error);
+    }
+  } catch(e){ afficherResultat('login-result', false, "Le service est momentanément indisponible."); }
+  setChargement('btn-login', false);
+}
+
+async function inscription(){
+  const username = document.getElementById('signup-username').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const confirm = document.getElementById('signup-password-confirm').value;
+
+  if(!username || !password){ afficherResultat('signup-result', false, "Identifiant et mot de passe requis."); return; }
+  if(password !== confirm){ afficherResultat('signup-result', false, "Les mots de passe ne correspondent pas."); return; }
+  if(avatarChoisi === null){ afficherResultat('signup-result', false, "Veuillez sélectionner un avatar."); return; }
+
+  setChargement('btn-signup', true);
+  try {
+    const res = await fetch(PLUTON_URL + '/api/gsociety/signup', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password, avatar_id: avatarChoisi})
+    });
+    const data = await res.json();
+    afficherResultat('signup-result', data.success, data.success ? "Compte créé. Vous pouvez vous connecter." : data.error);
+    if(data.success) basculer('login');
+  } catch(e){ afficherResultat('signup-result', false, "Le service est momentanément indisponible."); }
+  setChargement('btn-signup', false);
+}
+</script>
+
+</body>
+</html>
