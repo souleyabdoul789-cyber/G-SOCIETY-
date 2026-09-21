@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GLITCH — G-SOCIETY</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f; --card:rgba(255,255,255,0.03); --border:rgba(201,182,228,0.14);
+        --brown:#d8bfa6; --violet:#c9b6e4; --text:#e0e0e0; --text-dim:#9a9aa5;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg); font-family:'Inter',sans-serif; color:var(--text); min-height:100vh;}
+  h1,h2{font-family:'Space Grotesk',sans-serif;}
+
+  .navbar{height:60px; display:flex; align-items:center; gap:14px; padding:0 20px; border-bottom:1px solid var(--border);}
+  .navbar a.back{color:var(--text-dim); text-decoration:none; font-size:13px;}
+  .navbar a.back:hover{color:var(--violet);}
+  .navbar .svc{display:flex; align-items:center; gap:8px; font-weight:700; font-family:'Space Grotesk',sans-serif;}
+  .navbar .svc i{color:var(--violet);}
+
+  .layout{display:flex; max-width:960px; margin:0 auto;}
+  .sidebar{width:220px; flex-shrink:0; padding:26px 12px; border-right:1px solid var(--border); min-height:calc(100vh - 60px);}
+  .sidebar a{
+    display:flex; align-items:center; gap:11px; padding:11px 14px; border-radius:9px;
+    color:var(--text-dim); text-decoration:none; font-size:14px; margin-bottom:4px; cursor:pointer;
+    transition:background 0.15s, color 0.15s;
+  }
+  .sidebar a i{width:16px;}
+  .sidebar a:hover{background:rgba(201,182,228,0.06); color:#fff;}
+  .sidebar a.active{background:rgba(201,182,228,0.1); color:#fff;}
+
+  .content{flex:1; padding:30px 28px 100px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .panel p.desc{color:var(--text-dim); font-size:14px; margin-bottom:20px;}
+
+  label{display:block; font-size:13px; color:var(--text-dim); margin:14px 0 6px;}
+  input, textarea{
+    width:100%; padding:11px 14px; background:#14141c; border:1px solid var(--border);
+    border-radius:9px; color:var(--text); font-family:inherit; font-size:14px;
+  }
+  input:focus, textarea:focus{outline:none; border-color:var(--violet);}
+  textarea{resize:vertical; min-height:90px;}
+
+  /* Menu déroulant personnalisé — remplace <select> */
+  .dropdown-custom{position:relative;}
+  .dropdown-btn{
+    width:100%; text-align:left; padding:11px 14px; background:#14141c; border:1px solid var(--border);
+    border-radius:9px; color:var(--text); font-size:14px; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .dropdown-btn:hover{border-color:var(--violet);}
+  .dropdown-list{
+    position:absolute; top:calc(100% + 6px); left:0; right:0; background:#14141c;
+    border:1px solid var(--border); border-radius:9px; overflow:hidden; z-index:10; display:none;
+    box-shadow:0 10px 24px rgba(0,0,0,0.4);
+  }
+  .dropdown-list.open{display:block;}
+  .dropdown-list div{padding:11px 14px; font-size:14px; cursor:pointer; color:var(--text-dim);}
+  .dropdown-list div:hover{background:rgba(201,182,228,0.1); color:#fff;}
+  .dropdown-list div.selected{color:var(--violet);}
+
+  button.action{
+    margin-top:20px; width:100%; padding:13px; border:none; border-radius:9px;
+    background:linear-gradient(120deg, var(--brown), var(--violet)); color:#0a0a0f;
+    font-weight:600; font-size:14.5px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  button.action:hover:not(:disabled){transform:translateY(-2px); box-shadow:0 10px 26px rgba(201,182,228,0.28);}
+  button.action:active:not(:disabled){transform:translateY(0) scale(0.98);}
+  .spinner{width:16px; height:16px; border:2.5px solid rgba(10,10,15,0.3); border-top-color:#0a0a0f;
+    border-radius:50%; animation:spin 0.7s linear infinite; display:none;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  button.loading .spinner{display:inline-block;}
+
+  .result{margin-top:16px; padding:14px 16px; border-radius:9px; font-size:13.5px; display:none;}
+  .result.ok{display:block; background:rgba(95,217,122,0.08); border:1px solid rgba(95,217,122,0.3); color:#8ee8a4;}
+  .result.err{display:block; background:rgba(224,90,90,0.08); border:1px solid rgba(224,90,90,0.3); color:#f0a3a3;}
+  .apikey-box{margin-top:14px; padding:14px; background:#14141c; border:1px dashed var(--violet);
+    border-radius:9px; font-family:monospace; font-size:13px; word-break:break-all; display:none;}
+
+  @media (max-width:700px){
+    .layout{flex-direction:column;}
+    .sidebar{width:100%; display:flex; overflow-x:auto; border-right:none; border-bottom:1px solid var(--border); min-height:auto; padding:10px;}
+    .sidebar a{white-space:nowrap; margin-bottom:0;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="dashboard.html" class="back"><i class="fa-solid fa-arrow-left"></i> Services</a>
+  <div class="svc"><i class="fa-solid fa-terminal"></i> GLITCH</div>
+</nav>
+
+<div class="layout">
+  <div class="sidebar">
+    <a data-panel="key" class="active"><i class="fa-solid fa-key"></i> Clé API</a>
+    <a data-panel="report"><i class="fa-solid fa-user-shield"></i> Signaler un utilisateur</a>
+    <a data-panel="delete"><i class="fa-solid fa-trash"></i> Supprimer un serveur</a>
+    <a href="cgu.html"><i class="fa-solid fa-file-contract"></i> Conditions d'utilisation</a>
+    <a data-panel="about"><i class="fa-solid fa-circle-info"></i> À propos de GLITCH</a>
+  </div>
+
+  <div class="content">
+
+    <div class="panel active" id="panel-key">
+      <h2>Clé API</h2>
+      <p class="desc">Une clé n'est valable que pour ce service.</p>
+
+      <label>Durée de validité</label>
+      <div class="dropdown-custom" id="dd-duree">
+        <div class="dropdown-btn" onclick="toggleDropdown('dd-duree')">
+          <span id="dd-duree-label">90 jours (maximum)</span>
+          <i class="fa-solid fa-chevron-down" style="font-size:11px; color:var(--text-dim);"></i>
+        </div>
+        <div class="dropdown-list">
+          <div data-value="7">7 jours</div>
+          <div data-value="30">30 jours</div>
+          <div data-value="90" class="selected">90 jours (maximum)</div>
+        </div>
+      </div>
+
+      <button class="action" id="btn-key" onclick="demanderCle()">
+        <span class="spinner"></span><span>Générer la clé</span>
+      </button>
+      <div class="result" id="key-result"></div>
+      <div class="apikey-box" id="key-box"></div>
+    </div>
+
+    <div class="panel" id="panel-report">
+      <h2>Signaler un utilisateur</h2>
+      <p class="desc">Transmis uniquement à l'équipe.</p>
+      <label>Votre clé API</label>
+      <input type="text" id="report-key" placeholder="ght_...">
+      <label>Identifiant GLITCH concerné</label>
+      <input type="text" id="report-glitch-username" placeholder="pseudo utilisé dans le client">
+      <label>Motif</label>
+      <input type="text" id="report-motif" placeholder="résumé en une phrase">
+      <label>Détails</label>
+      <textarea id="report-details" placeholder="décrivez la situation"></textarea>
+      <button class="action" id="btn-report" onclick="envoyerSignalement()">
+        <span class="spinner"></span><span>Envoyer</span>
+      </button>
+      <div class="result" id="report-result"></div>
+    </div>
+
+    <div class="panel" id="panel-delete">
+      <h2>Supprimer un serveur</h2>
+      <p class="desc">Vérifié automatiquement : seul le créateur du salon peut le supprimer. Irréversible.</p>
+      <label>Votre clé API</label>
+      <input type="text" id="del-key" placeholder="ght_...">
+      <label>Identifiant GLITCH (créateur du salon)</label>
+      <input type="text" id="del-glitch-username" placeholder="pseudo utilisé dans le client">
+      <label>Nom du serveur</label>
+      <input type="text" id="del-server" placeholder="nom exact du salon">
+      <button class="action" id="btn-delete" onclick="supprimerServeur()">
+        <span class="spinner"></span><span>Supprimer définitivement</span>
+      </button>
+      <div class="result" id="del-result"></div>
+    </div>
+
+    <div class="panel" id="panel-about">
+      <h2>À propos de GLITCH</h2>
+      <p class="desc">Réseau social 100% terminal — pas de navigateur, pas de profil public. Chaque salon est indépendant, permanent ou éphémère. Consultez les <a href="cgu.html" style="color:var(--violet);">conditions d'utilisation</a> pour le détail complet.</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PLUTON_URL = "https://glitch-wbfo.onrender.com";
+
+if(!localStorage.getItem('gs_session')){ window.location.href = "login.html"; }
+
+// --- Navigation latérale (pas d'onglets, pas le navigateur) ---
+document.querySelectorAll('.sidebar a[data-panel]').forEach(a=>{
+  a.addEventListener('click', ()=>{
+    document.querySelectorAll('.sidebar a[data-panel]').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    a.classList.add('active');
+    document.getElementById('panel-'+a.dataset.panel).classList.add('active');
+  });
+});
+
+// --- Dropdown personnalisé ---
+let dureeChoisie = 90;
+function toggleDropdown(id){
+  document.getElementById(id).querySelector('.dropdown-list').classList.toggle('open');
+}
+document.querySelectorAll('#dd-duree .dropdown-list div').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    document.querySelectorAll('#dd-duree .dropdown-list div').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');
+    dureeChoisie = parseInt(opt.dataset.value, 10);
+    document.getElementById('dd-duree-label').textContent = opt.textContent;
+    document.getElementById('dd-duree').querySelector('.dropdown-list').classList.remove('open');
+  });
+});
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.dropdown-custom')){
+    document.querySelectorAll('.dropdown-list').forEach(l=>l.classList.remove('open'));
+  }
+});
+
+function afficherResultat(id, ok, message){
+  const el = document.getElementById(id);
+  el.className = 'result ' + (ok ? 'ok' : 'err');
+  el.textContent = message;
+}
+function setChargement(btnId, actif){
+  const btn = document.getElementById(btnId);
+  btn.classList.toggle('loading', actif);
+  btn.disabled = actif;
+}
+
+async function demanderCle(){
+  setChargement('btn-key', true);
+  try {
+    const res = await fetch(PLUTON_URL + '/api/session/request-key', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({session_token: localStorage.getItem('gs_session'), categorie: 'glitch', duree_jours: dureeChoisie})
+    });
+    const data = await res.json();
+    if(data.success){
+      afficherResultat('key-result', true, "Clé générée — copiez-la maintenant, elle ne sera plus réaffichée.");
+      const box = document.getElementById('key-box');
+      box.style.display = 'block';
+      box.textContent = data.api_key;
+    } else { afficherResultat('key-result', false, data.error); }
+  } catch(e){ afficherResultat('key-result', false, "Le service est momentanément indisponible."); }
+  setChargement('btn-key', false);
+}
+
+async function envoyerSignalement(){
+  const api_key = document.getElementById('report-key').value.trim();
+  const glitch_username = document.getElementById('report-glitch-username').value.trim();
+  const motif = document.getElementById('report-motif').value.trim();
+  const details = document.getElementById('report-details').value.trim();
+  if(!api_key || !glitch_username || !motif){ afficherResultat('report-result', false, "Clé API, identifiant et motif requis."); return; }
+
+  setChargement('btn-report', true);
+  try {
+    const res = await fetch(PLUTON_URL + '/api/report', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({api_key, glitch_username, type: 'user', target: null, motif, details})
+    });
+    const data = await res.json();
+    afficherResultat('report-result', data.success, data.success ? data.message : data.error);
+  } catch(e){ afficherResultat('report-result', false, "Le service est momentanément indisponible."); }
+  setChargement('btn-report', false);
+}
+
+async function supprimerServeur(){
+  const api_key = document.getElementById('del-key').value.trim();
+  const glitch_username = document.getElementById('del-glitch-username').value.trim();
+  const server_name = document.getElementById('del-server').value.trim();
+  if(!api_key || !glitch_username || !server_name){ afficherResultat('del-result', false, "Tous les champs sont requis."); return; }
+  if(!confirm(`Supprimer définitivement "${server_name}" ?`)) return;
+
+  setChargement('btn-delete', true);
+  try {
+    const res = await fetch(PLUTON_URL + '/api/delete-server', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({api_key, glitch_username, server_name})
+    });
+    const data = await res.json();
+    afficherResultat('del-result', data.success, data.success ? data.message : data.error);
+  } catch(e){ afficherResultat('del-result', false, "Le service est momentanément indisponible."); }
+  setChargement('btn-delete', false);
+}
+</script>
+
+</body>
+</html>

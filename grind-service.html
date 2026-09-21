@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GRIND — G-SOCIETY</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f; --brown:#d8bfa6; --violet:#c9b6e4; --text:#e0e0e0; --text-dim:#9a9aa5; --border:rgba(201,182,228,0.14);}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg); font-family:'Inter',sans-serif; color:var(--text); min-height:100vh;
+       display:flex; flex-direction:column;}
+  .navbar{height:60px; display:flex; align-items:center; gap:14px; padding:0 20px; border-bottom:1px solid var(--border);}
+  .navbar a{color:var(--text-dim); text-decoration:none; font-size:13px;}
+  .navbar a:hover{color:var(--violet);}
+  main{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px;}
+  .icon{width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(120deg,var(--brown),var(--violet)); margin-bottom:20px;}
+  .icon i{color:#0a0a0f; font-size:28px;}
+  h1{font-family:'Space Grotesk',sans-serif; font-size:1.6rem; margin-bottom:10px;}
+  p{color:var(--text-dim); max-width:400px; font-size:14.5px;}
+</style>
+</head>
+<body>
+<nav class="navbar"><a href="dashboard.html"><i class="fa-solid fa-arrow-left"></i> Services</a></nav>
+<main>
+  <div class="icon"><i class="fa-solid fa-brain"></i></div>
+  <h1>GRIND arrive bientôt</h1>
+  <p>Service d'entraide scolaire en cours de construction. Vous serez notifié dès son ouverture.</p>
+</main>
+</body>
+</html>
