@@ -7,27 +7,217 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0a0a0f; --brown:#d8bfa6; --violet:#c9b6e4; --text:#e0e0e0; --text-dim:#9a9aa5; --border:rgba(201,182,228,0.14);}
+  :root{--bg:#0a0a0f; --card:rgba(255,255,255,0.03); --border:rgba(201,182,228,0.14);
+        --brown:#d8bfa6; --violet:#c9b6e4; --text:#e0e0e0; --text-dim:#9a9aa5;}
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg); font-family:'Inter',sans-serif; color:var(--text); min-height:100vh;
-       display:flex; flex-direction:column;}
+  body{background:var(--bg); font-family:'Inter',sans-serif; color:var(--text); min-height:100vh;}
+  h1,h2{font-family:'Space Grotesk',sans-serif;}
+
   .navbar{height:60px; display:flex; align-items:center; gap:14px; padding:0 20px; border-bottom:1px solid var(--border);}
-  .navbar a{color:var(--text-dim); text-decoration:none; font-size:13px;}
-  .navbar a:hover{color:var(--violet);}
-  main{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px;}
-  .icon{width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(120deg,var(--brown),var(--violet)); margin-bottom:20px;}
-  .icon i{color:#0a0a0f; font-size:28px;}
-  h1{font-family:'Space Grotesk',sans-serif; font-size:1.6rem; margin-bottom:10px;}
-  p{color:var(--text-dim); max-width:400px; font-size:14.5px;}
+  .navbar a.back{color:var(--text-dim); text-decoration:none; font-size:13px;}
+  .navbar a.back:hover{color:var(--violet);}
+  .navbar .svc{display:flex; align-items:center; gap:8px; font-weight:700; font-family:'Space Grotesk',sans-serif;}
+  .navbar .svc i{color:var(--violet);}
+
+  .layout{display:flex; max-width:960px; margin:0 auto;}
+  .sidebar{width:220px; flex-shrink:0; padding:26px 12px; border-right:1px solid var(--border); min-height:calc(100vh - 60px);}
+  .sidebar a{
+    display:flex; align-items:center; gap:11px; padding:11px 14px; border-radius:9px;
+    color:var(--text-dim); text-decoration:none; font-size:14px; margin-bottom:4px; cursor:pointer;
+    transition:background 0.15s, color 0.15s;
+  }
+  .sidebar a i{width:16px;}
+  .sidebar a:hover{background:rgba(201,182,228,0.06); color:#fff;}
+  .sidebar a.active{background:rgba(201,182,228,0.1); color:#fff;}
+
+  .content{flex:1; padding:30px 28px 100px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .panel p.desc{color:var(--text-dim); font-size:14px; margin-bottom:20px;}
+
+  .dropdown-custom{position:relative;}
+  .dropdown-btn{
+    width:100%; text-align:left; padding:11px 14px; background:#14141c; border:1px solid var(--border);
+    border-radius:9px; color:var(--text); font-size:14px; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .dropdown-btn:hover{border-color:var(--violet);}
+  .dropdown-list{
+    position:absolute; top:calc(100% + 6px); left:0; right:0; background:#14141c;
+    border:1px solid var(--border); border-radius:9px; overflow:hidden; z-index:10; display:none;
+    box-shadow:0 10px 24px rgba(0,0,0,0.4);
+  }
+  .dropdown-list.open{display:block;}
+  .dropdown-list div{padding:11px 14px; font-size:14px; cursor:pointer; color:var(--text-dim);}
+  .dropdown-list div:hover{background:rgba(201,182,228,0.1); color:#fff;}
+  .dropdown-list div.selected{color:var(--violet);}
+  label{display:block; font-size:13px; color:var(--text-dim); margin:14px 0 6px;}
+
+  button.action{
+    margin-top:20px; width:100%; padding:13px; border:none; border-radius:9px;
+    background:linear-gradient(120deg, var(--brown), var(--violet)); color:#0a0a0f;
+    font-weight:600; font-size:14.5px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  button.action:hover:not(:disabled){transform:translateY(-2px); box-shadow:0 10px 26px rgba(201,182,228,0.28);}
+  button.action:active:not(:disabled){transform:translateY(0) scale(0.98);}
+  button.secondaire{background:transparent; border:1px solid var(--border); color:var(--text);}
+  button.secondaire:hover{border-color:var(--violet); color:#fff; box-shadow:none; transform:translateY(-2px);}
+
+  .spinner{width:16px; height:16px; border:2.5px solid rgba(10,10,15,0.3); border-top-color:#0a0a0f;
+    border-radius:50%; animation:spin 0.7s linear infinite; display:none;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  button.loading .spinner{display:inline-block;}
+
+  .result{margin-top:16px; padding:14px 16px; border-radius:9px; font-size:13.5px; display:none;}
+  .result.ok{display:block; background:rgba(95,217,122,0.08); border:1px solid rgba(95,217,122,0.3); color:#8ee8a4;}
+  .result.err{display:block; background:rgba(224,90,90,0.08); border:1px solid rgba(224,90,90,0.3); color:#f0a3a3;}
+  .apikey-box{
+    margin-top:14px; padding:14px; background:#14141c; border:1px dashed var(--violet);
+    border-radius:9px; font-family:monospace; font-size:13px; word-break:break-all;
+    display:none; position:relative;
+  }
+  .copy-btn{
+    position:absolute; top:8px; right:8px; background:rgba(201,182,228,0.15); border:none;
+    color:var(--violet); font-size:11px; padding:4px 9px; border-radius:6px; cursor:pointer;
+  }
+  .copy-btn:hover{background:rgba(201,182,228,0.25);}
+
+  @media (max-width:700px){
+    .layout{flex-direction:column;}
+    .sidebar{width:100%; display:flex; overflow-x:auto; border-right:none; border-bottom:1px solid var(--border); min-height:auto; padding:10px;}
+    .sidebar a{white-space:nowrap; margin-bottom:0;}
+  }
 </style>
 </head>
 <body>
-<nav class="navbar"><a href="dashboard.html"><i class="fa-solid fa-arrow-left"></i> Services</a></nav>
-<main>
-  <div class="icon"><i class="fa-solid fa-brain"></i></div>
-  <h1>GRIND arrive bientôt</h1>
-  <p>Service d'entraide scolaire en cours de construction. Vous serez notifié dès son ouverture.</p>
-</main>
+
+<nav class="navbar">
+  <a href="dashboard.html" class="back"><i class="fa-solid fa-arrow-left"></i> Services</a>
+  <div class="svc"><i class="fa-solid fa-brain"></i> GRIND</div>
+</nav>
+
+<div class="layout">
+  <div class="sidebar">
+    <a data-panel="key" class="active"><i class="fa-solid fa-key"></i> Clé API</a>
+    <a href="grind-cgu.html"><i class="fa-solid fa-file-contract"></i> Conditions d'utilisation</a>
+    <a data-panel="about"><i class="fa-solid fa-circle-info"></i> À propos de GRIND</a>
+  </div>
+
+  <div class="content">
+
+    <div class="panel active" id="panel-key">
+      <h2>Clé API</h2>
+      <p class="desc">Cette clé prouve que tu possèdes un compte G-SOCIETY légitime — à coller dans le formulaire d'inscription de GRIND.</p>
+
+      <label>Durée de validité</label>
+      <div class="dropdown-custom" id="dd-duree">
+        <div class="dropdown-btn" onclick="toggleDropdown('dd-duree')">
+          <span id="dd-duree-label">90 jours (maximum)</span>
+          <i class="fa-solid fa-chevron-down" style="font-size:11px; color:var(--text-dim);"></i>
+        </div>
+        <div class="dropdown-list">
+          <div data-value="7">7 jours</div>
+          <div data-value="30">30 jours</div>
+          <div data-value="90" class="selected">90 jours (maximum)</div>
+        </div>
+      </div>
+
+      <button class="action" id="btn-key" onclick="demanderCle()">
+        <span class="spinner"></span><span>Générer la clé</span>
+      </button>
+      <div class="result" id="key-result"></div>
+      <div class="apikey-box" id="key-box">
+        <button class="copy-btn" onclick="copierCle()">Copier</button>
+        <span id="key-value"></span>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-about">
+      <h2>À propos de GRIND</h2>
+      <p class="desc">
+        Service d'entraide scolaire en temps réel : mise en relation par niveau et matière,
+        sessions audio en direct, feuille de travail partagée. GRIND fonctionne avec son
+        propre système de compte, distinct de ton identité G-SOCIETY — la clé générée
+        ci-contre ne sert qu'à créer ce compte GRIND une première fois.
+      </p>
+      <a href="https://grind-4vsz.onrender.com" target="_blank" rel="noopener">
+        <button class="action" style="margin-top:8px;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ouvrir GRIND</button>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PLUTON_URL = "https://glitch-wbfo.onrender.com";
+
+if(!localStorage.getItem('gs_session')){ window.location.href = "login.html"; }
+
+document.querySelectorAll('.sidebar a[data-panel]').forEach(a=>{
+  a.addEventListener('click', ()=>{
+    document.querySelectorAll('.sidebar a[data-panel]').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    a.classList.add('active');
+    document.getElementById('panel-'+a.dataset.panel).classList.add('active');
+  });
+});
+
+let dureeChoisie = 90;
+function toggleDropdown(id){
+  document.getElementById(id).querySelector('.dropdown-list').classList.toggle('open');
+}
+document.querySelectorAll('#dd-duree .dropdown-list div').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    document.querySelectorAll('#dd-duree .dropdown-list div').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');
+    dureeChoisie = parseInt(opt.dataset.value, 10);
+    document.getElementById('dd-duree-label').textContent = opt.textContent;
+    document.getElementById('dd-duree').querySelector('.dropdown-list').classList.remove('open');
+  });
+});
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.dropdown-custom')){
+    document.querySelectorAll('.dropdown-list').forEach(l=>l.classList.remove('open'));
+  }
+});
+
+function afficherResultat(id, ok, message){
+  const el = document.getElementById(id);
+  el.className = 'result ' + (ok ? 'ok' : 'err');
+  el.textContent = message;
+}
+function setChargement(btnId, actif){
+  const btn = document.getElementById(btnId);
+  btn.classList.toggle('loading', actif);
+  btn.disabled = actif;
+}
+
+async function demanderCle(){
+  setChargement('btn-key', true);
+  try {
+    const res = await fetch(PLUTON_URL + '/api/session/request-key', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({session_token: localStorage.getItem('gs_session'), categorie: 'grind', duree_jours: dureeChoisie})
+    });
+    const data = await res.json();
+    if(data.success){
+      afficherResultat('key-result', true, "Clé générée — copiez-la maintenant, elle ne sera plus réaffichée.");
+      document.getElementById('key-box').style.display = 'block';
+      document.getElementById('key-value').textContent = data.api_key;
+    } else { afficherResultat('key-result', false, data.error); }
+  } catch(e){ afficherResultat('key-result', false, "Le service est momentanément indisponible."); }
+  setChargement('btn-key', false);
+}
+
+function copierCle(){
+  const cle = document.getElementById('key-value').textContent;
+  navigator.clipboard.writeText(cle).then(()=>{
+    afficherResultat('key-result', true, "Clé copiée dans le presse-papier.");
+  });
+}
+</script>
+
 </body>
 </html>

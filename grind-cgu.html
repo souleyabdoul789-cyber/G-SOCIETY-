@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conditions d'utilisation — GRIND</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f; --card:rgba(255,255,255,0.03); --border:rgba(201,182,228,0.12);
+        --brown:#d8bfa6; --violet:#c9b6e4; --text:#e0e0e0; --text-dim:#9a9aa5;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg); font-family:'Inter',sans-serif; color:var(--text); line-height:1.7;}
+  h1,h2{font-family:'Space Grotesk',sans-serif;}
+  header{padding:70px 24px 30px; text-align:center; border-bottom:1px solid var(--border);}
+  header a.back{color:var(--text-dim); text-decoration:none; font-size:14px;}
+  header a.back:hover{color:var(--violet);}
+  header h1{font-size:clamp(1.8rem,5vw,2.6rem); margin-top:16px;
+    background:linear-gradient(120deg,#fff,var(--violet)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+  header p{color:var(--text-dim); margin-top:10px; font-size:14px;}
+  main{max-width:760px; margin:0 auto; padding:50px 24px 100px;}
+  section{margin-bottom:36px;}
+  section h2{font-size:18px; margin-bottom:12px; color:var(--brown);}
+  section p, section li{color:var(--text-dim); font-size:15px; margin-bottom:10px;}
+  section ul{padding-left:20px;}
+  a{color:var(--violet);}
+  footer{border-top:1px solid var(--border); padding:30px 24px; text-align:center; color:var(--text-dim); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="grind-service.html" class="back"><i class="fa-solid fa-arrow-left"></i> Retour à GRIND</a>
+  <h1>Conditions d'utilisation — GRIND</h1>
+  <p>Service G-SOCIETY d'entraide scolaire.</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>1. Qui nous sommes</h2>
+    <p>GRIND est un service de G-SOCIETY dédié à l'entraide scolaire entre élèves. Comme GLITCH, il repose sur l'infrastructure centrale Pluton, mais fonctionne avec son propre système de compte.</p>
+  </section>
+
+  <section>
+    <h2>2. Deux comptes distincts</h2>
+    <p>Un compte G-SOCIETY (identité centrale, utilisée pour générer des clés d'accès) est distinct de ton compte GRIND (pseudo et mot de passe propres à GRIND, créés séparément). Ta clé API G-SOCIETY catégorie <code>grind</code> n'est vérifiée qu'une seule fois, au moment de la création de ton compte GRIND — elle prouve que tu possèdes un compte G-SOCIETY légitime, rien de plus.</p>
+  </section>
+
+  <section>
+    <h2>3. Clé API</h2>
+    <p>La génération d'une clé catégorie <code>grind</code> suit les mêmes règles que les autres services : une génération toutes les 72 heures, durée de vie maximale de 90 jours.</p>
+  </section>
+
+  <section>
+    <h2>4. Comportements interdits</h2>
+    <ul>
+      <li>Harcèlement ou intimidation envers un autre élève, y compris dans une classe ou une session d'aide.</li>
+      <li>Usurpation du rôle "prof" pour induire en erreur.</li>
+      <li>Contenu hors-sujet, publicitaire ou malveillant dans le fil d'actu.</li>
+      <li>Tentative de contourner la confidentialité des feuilles de travail d'un autre utilisateur sans autorisation.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>5. Spécificités GRIND</h2>
+    <p>Un post de catégorie "problème" doit comporter une date limite. Passé ce délai sans résolution, il expire automatiquement et devient non-répondable. Une classe créée par un utilisateur ne se rejoint que par lien d'invitation, jamais par recherche publique. La feuille de travail de chaque utilisateur est privée par défaut ; la rendre visible à un tiers nécessite une autorisation explicite du chef de classe ou du "prof" désigné pour la session.</p>
+  </section>
+
+  <section>
+    <h2>6. Données collectées</h2>
+    <p>À l'inscription du profil, GRIND collecte ton âge, ton pays, ta classe ou filière, et les matières où tu déclares des difficultés. Ces informations servent uniquement à la mise en relation avec d'autres élèves (matching) et ne sont pas partagées avec des tiers.</p>
+  </section>
+
+  <section>
+    <h2>7. Limitation de responsabilité</h2>
+    <p>GRIND met en relation des élèves entre eux ; l'exactitude de l'aide fournie par un pair n'est ni vérifiée ni garantie par G-SOCIETY. Le service est fourni "en l'état", en développement actif.</p>
+  </section>
+
+  <section>
+    <h2>8. Résiliation</h2>
+    <p>Tu peux cesser d'utiliser GRIND à tout moment. G-SOCIETY se réserve le droit de suspendre un compte GRIND en cas de manquement grave ou répété aux présentes conditions.</p>
+  </section>
+
+  <section>
+    <h2>9. Contact</h2>
+    <p>Pour toute question ou signalement concernant GRIND : mêmes canaux que G-SOCIETY (<a href="https://t.me/glitch_chanel" target="_blank" rel="noopener">chaîne Telegram officielle</a>).</p>
+  </section>
+
+</main>
+
+<footer>G-SOCIETY — GRIND</footer>
+
+</body>
+</html>
