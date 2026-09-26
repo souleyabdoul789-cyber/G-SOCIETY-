@@ -81,6 +81,16 @@
   .apikey-box{margin-top:14px; padding:14px; background:#14141c; border:1px dashed var(--violet);
     border-radius:9px; font-family:monospace; font-size:13px; word-break:break-all; display:none;}
 
+  /* Modal personnalisé — remplace confirm() du navigateur */
+  .modal-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:100;}
+  .modal-overlay.open{display:flex;}
+  .modal-box{width:100%; max-width:360px; background:#14141c; border:1px solid var(--border); border-radius:16px; padding:24px; margin:0 20px;}
+  .modal-box h3{font-family:'Space Grotesk',sans-serif; font-size:16px; margin-bottom:10px;}
+  .modal-box p{color:var(--text-dim); font-size:13.5px; margin-bottom:18px;}
+  .modal-actions{display:flex; gap:10px;}
+  .modal-actions button{flex:1; padding:10px; border-radius:9px; font-size:13.5px; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text);}
+  .modal-actions button.confirmer{background:#e05a5a; color:#fff; border:none; font-weight:600;}
+
   @media (max-width:700px){
     .layout{flex-direction:column;}
     .sidebar{width:100%; display:flex; overflow-x:auto; border-right:none; border-bottom:1px solid var(--border); min-height:auto; padding:10px;}
@@ -167,6 +177,17 @@
       <p class="desc">Réseau social 100% terminal — pas de navigateur, pas de profil public. Chaque salon est indépendant, permanent ou éphémère. Consultez les <a href="cgu.html" style="color:var(--violet);">conditions d'utilisation</a> pour le détail complet.</p>
     </div>
 
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <h3>Supprimer ce serveur ?</h3>
+    <p id="modal-message"></p>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('modal-overlay').classList.remove('open')">Annuler</button>
+      <button class="confirmer" id="modal-confirmer">Supprimer</button>
+    </div>
   </div>
 </div>
 
@@ -258,7 +279,16 @@ async function supprimerServeur(){
   const glitch_username = document.getElementById('del-glitch-username').value.trim();
   const server_name = document.getElementById('del-server').value.trim();
   if(!api_key || !glitch_username || !server_name){ afficherResultat('del-result', false, "Tous les champs sont requis."); return; }
-  if(!confirm(`Supprimer définitivement "${server_name}" ?`)) return;
+
+  document.getElementById('modal-message').textContent = `"${server_name}" et tous ses messages seront supprimés définitivement.`;
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal-confirmer').onclick = async () => {
+    document.getElementById('modal-overlay').classList.remove('open');
+    await executerSuppression(api_key, glitch_username, server_name);
+  };
+}
+
+async function executerSuppression(api_key, glitch_username, server_name){
 
   setChargement('btn-delete', true);
   try {
