@@ -56,6 +56,38 @@
 
   #acces-refuse{display:none; text-align:center; padding:100px 24px; color:var(--text-dim);}
 
+  label{display:block; font-size:13px; color:var(--text-dim); margin:14px 0 6px;}
+  input, textarea{width:100%; padding:11px 14px; background:#14141c; border:1px solid var(--border);
+    border-radius:9px; color:var(--text); font-family:inherit; font-size:14px;}
+  input:focus, textarea:focus{outline:none; border-color:var(--violet);}
+  textarea{resize:vertical; min-height:90px;}
+
+  .dropdown-custom{position:relative;}
+  .dropdown-btn{width:100%; text-align:left; padding:11px 14px; background:#14141c; border:1px solid var(--border);
+    border-radius:9px; color:var(--text); font-size:14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;}
+  .dropdown-btn:hover{border-color:var(--violet);}
+  .dropdown-list{position:absolute; top:calc(100% + 6px); left:0; right:0; background:#14141c;
+    border:1px solid var(--border); border-radius:9px; overflow:hidden; z-index:10; display:none;
+    box-shadow:0 10px 24px rgba(0,0,0,0.4); animation: dropIn 0.15s ease-out;}
+  .dropdown-list.open{display:block;}
+  .dropdown-list div{padding:11px 14px; font-size:14px; cursor:pointer; color:var(--text-dim);}
+  .dropdown-list div:hover{background:rgba(201,182,228,0.1); color:#fff;}
+  .dropdown-list div.selected{color:var(--violet);}
+  @keyframes dropIn{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
+
+  button.action{margin-top:20px; width:100%; padding:13px; border:none; border-radius:9px;
+    background:linear-gradient(120deg, var(--brown), var(--violet)); color:#0a0a0f;
+    font-weight:600; font-size:14.5px; cursor:pointer; transition:transform 0.15s ease, box-shadow 0.15s ease;}
+  button.action:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(201,182,228,0.28);}
+  button.action:active{transform:translateY(0) scale(0.98);}
+
+  @keyframes fadeSlideUp{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:translateY(0);} }
+
+  .spinner{width:14px; height:14px; border:2.5px solid rgba(10,10,15,0.3); border-top-color:#0a0a0f;
+    border-radius:50%; animation:spin 0.7s linear infinite; display:none; margin-right:8px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  button.loading .spinner{display:inline-block;}
+
   /* Badge de certification — dégradé marron/blanc, façon Meta */
   .badge-certifie{
     display:inline-flex; align-items:center; justify-content:center;
@@ -103,6 +135,7 @@
     <div class="sidebar">
       <a data-panel="comptes" class="active"><i class="fa-solid fa-users"></i> Comptes</a>
       <a data-panel="monitoring"><i class="fa-solid fa-server"></i> Monitoring</a>
+      <a data-panel="annonces"><i class="fa-solid fa-bullhorn"></i> Annonces</a>
     </div>
 
     <div class="content">
@@ -119,6 +152,52 @@
       <div class="panel" id="panel-monitoring">
         <h2 style="margin-bottom:18px;">État des services</h2>
         <div class="services" id="services-grid"></div>
+      </div>
+
+      <div class="panel" id="panel-annonces" style="animation: fadeSlideUp 0.35s ease-out;">
+        <h2 style="margin-bottom:18px;">Publier une annonce</h2>
+
+        <label>Service</label>
+        <div class="dropdown-custom" id="dd-service">
+          <div class="dropdown-btn" onclick="toggleDD('dd-service')">
+            <span id="dd-service-label">GLITCH</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:11px; color:var(--text-dim);"></i>
+          </div>
+          <div class="dropdown-list">
+            <div data-value="glitch" class="selected">GLITCH</div>
+            <div data-value="grind">GRIND</div>
+          </div>
+        </div>
+
+        <label>Type</label>
+        <div class="dropdown-custom" id="dd-type">
+          <div class="dropdown-btn" onclick="toggleDD('dd-type')">
+            <span id="dd-type-label">Annonce (texte)</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:11px; color:var(--text-dim);"></i>
+          </div>
+          <div class="dropdown-list">
+            <div data-value="annonce" class="selected">Annonce (texte)</div>
+            <div data-value="release">Nouvelle version (APK)</div>
+          </div>
+        </div>
+
+        <label>Titre</label>
+        <input type="text" id="post-title" placeholder="ex: Nouvelle version disponible">
+
+        <label id="label-body">Message</label>
+        <textarea id="post-body" placeholder="notes de version, détails..."></textarea>
+
+        <div id="champs-release" style="display:none;">
+          <label>Version</label>
+          <input type="text" id="post-version" placeholder="ex: v1.2">
+          <label>Lien MediaFire</label>
+          <input type="text" id="post-apk-link" placeholder="https://www.mediafire.com/...">
+        </div>
+
+        <button class="action" id="btn-post" onclick="publierPost()">
+          <span class="spinner"></span><span>Publier</span>
+        </button>
+        <div class="result" id="post-result"></div>
       </div>
 
     </div>
@@ -272,6 +351,73 @@ async function uncertifier(username){
   const data = await res.json();
   afficherResultat('comptes-result', data.success, data.message);
   if(data.success) chargerComptes();
+}
+
+// --- Annonces : dropdowns personnalisés, publication ---
+let serviceChoisi = 'glitch';
+let typeChoisi = 'annonce';
+
+function toggleDD(id){
+  document.querySelectorAll('.dropdown-list.open').forEach(l=>{
+    if(!l.closest('.dropdown-custom').id === id) l.classList.remove('open');
+  });
+  document.getElementById(id).querySelector('.dropdown-list').classList.toggle('open');
+}
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.dropdown-custom')){
+    document.querySelectorAll('.dropdown-list').forEach(l=>l.classList.remove('open'));
+  }
+});
+document.querySelectorAll('#dd-service .dropdown-list div').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    document.querySelectorAll('#dd-service .dropdown-list div').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');
+    serviceChoisi = opt.dataset.value;
+    document.getElementById('dd-service-label').textContent = opt.textContent;
+    document.getElementById('dd-service').querySelector('.dropdown-list').classList.remove('open');
+  });
+});
+document.querySelectorAll('#dd-type .dropdown-list div').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    document.querySelectorAll('#dd-type .dropdown-list div').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');
+    typeChoisi = opt.dataset.value;
+    document.getElementById('dd-type-label').textContent = opt.textContent;
+    document.getElementById('dd-type').querySelector('.dropdown-list').classList.remove('open');
+    document.getElementById('champs-release').style.display = typeChoisi === 'release' ? 'block' : 'none';
+    document.getElementById('label-body').textContent = typeChoisi === 'release' ? 'Notes de version' : 'Message';
+  });
+});
+
+async function publierPost(){
+  const title = document.getElementById('post-title').value.trim();
+  const body = document.getElementById('post-body').value.trim();
+  const version = document.getElementById('post-version').value.trim();
+  const apk_link = document.getElementById('post-apk-link').value.trim();
+  if(!title || !body){ afficherResultat('post-result', false, "Titre et message requis."); return; }
+  if(typeChoisi === 'release' && (!version || !apk_link)){ afficherResultat('post-result', false, "Version et lien MediaFire requis pour une release."); return; }
+
+  const btn = document.getElementById('btn-post');
+  btn.classList.add('loading'); btn.disabled = true;
+  try {
+    const res = await fetch(PLUTON_URL + '/api/posts/create', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        session_token: sessionToken, service: serviceChoisi, type: typeChoisi,
+        title, body, version: typeChoisi === 'release' ? version : null,
+        apk_link: typeChoisi === 'release' ? apk_link : null
+      })
+    });
+    const data = await res.json();
+    afficherResultat('post-result', data.success, data.success ? "Publié." : (data.error || "Erreur."));
+    if(data.success){
+      document.getElementById('post-title').value = '';
+      document.getElementById('post-body').value = '';
+      document.getElementById('post-version').value = '';
+      document.getElementById('post-apk-link').value = '';
+    }
+  } catch(e){ afficherResultat('post-result', false, "Le service est momentanément indisponible."); }
+  btn.classList.remove('loading'); btn.disabled = false;
 }
 
 // --- Monitoring : ping direct depuis le navigateur, aucun calcul serveur ---

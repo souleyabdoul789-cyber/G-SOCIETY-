@@ -91,6 +91,60 @@
   .modal-actions button{flex:1; padding:10px; border-radius:9px; font-size:13.5px; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text);}
   .modal-actions button.confirmer{background:#e05a5a; color:#fff; border:none; font-weight:600;}
 
+  .posts-feed{display:flex; flex-direction:column; gap:16px; margin-top:16px;}
+  .post-card{
+    background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px;
+    opacity:0; animation: fadeSlideUp 0.4s ease-out forwards;
+  }
+  @keyframes fadeSlideUp{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+  .post-header{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .post-admin-badge{
+    display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px;
+    border-radius:50%; background:linear-gradient(135deg, var(--brown), #ffffff); margin-left:4px;
+  }
+  .post-admin-badge i{color:#0a0a0f; font-size:8px;}
+  .post-date{color:var(--text-dim); font-size:12px; margin-left:auto;}
+  .post-title{font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; margin-bottom:6px;}
+  .post-body{color:var(--text-dim); font-size:14px; white-space:pre-wrap;}
+
+  .release-head{display:flex; align-items:center; gap:14px; margin-bottom:12px;}
+  .release-icon{
+    width:52px; height:52px; border-radius:14px; flex-shrink:0;
+    background:linear-gradient(135deg,var(--brown),var(--violet)); display:flex; align-items:center; justify-content:center;
+  }
+  .release-icon i{color:#0a0a0f; font-size:22px;}
+  .release-version{color:var(--text-dim); font-size:12.5px;}
+
+  .stars{display:inline-flex; gap:2px; cursor:pointer;}
+  .stars i{color:#3a3a45; font-size:15px; transition:color 0.15s, transform 0.15s;}
+  .stars i.filled{color:#e0c97a;}
+  .stars:hover i{transform:scale(1.12);}
+  .rating-line{display:flex; align-items:center; gap:10px; margin:10px 0; font-size:13px; color:var(--text-dim);}
+
+  .btn-download{
+    display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:9px;
+    background:linear-gradient(120deg,var(--brown),var(--violet)); color:#0a0a0f; font-weight:600;
+    font-size:13.5px; text-decoration:none; margin-top:6px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-download:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(201,182,228,0.3);}
+  .btn-download:active{transform:translateY(0) scale(0.97);}
+
+  .comments-toggle{color:var(--violet); font-size:13px; cursor:pointer; margin-top:14px; display:inline-block;}
+  .comments-box{display:none; margin-top:12px; border-top:1px solid var(--border); padding-top:12px;}
+  .comments-box.open{display:block; animation: fadeSlideUp 0.25s ease-out;}
+  .comment-item{display:flex; gap:8px; margin-bottom:10px; font-size:13px;}
+  .comment-item .cu{color:var(--violet); font-weight:600;}
+  .comment-item .ct{color:var(--text-dim);}
+  .comment-input-row{display:flex; gap:8px; margin-top:10px;}
+  .comment-input-row input{flex:1;}
+  .comment-input-row button{
+    padding:0 16px; border:none; border-radius:9px; background:linear-gradient(120deg,var(--brown),var(--violet));
+    color:#0a0a0f; font-weight:600; cursor:pointer; transition:transform 0.15s;
+  }
+  .comment-input-row button:hover{transform:translateY(-2px);}
+
   @media (max-width:700px){
     .layout{flex-direction:column;}
     .sidebar{width:100%; display:flex; overflow-x:auto; border-right:none; border-bottom:1px solid var(--border); min-height:auto; padding:10px;}
@@ -107,7 +161,8 @@
 
 <div class="layout">
   <div class="sidebar">
-    <a data-panel="key" class="active"><i class="fa-solid fa-key"></i> Clé API</a>
+    <a data-panel="annonces" class="active"><i class="fa-solid fa-bullhorn"></i> Annonces</a>
+    <a data-panel="key"><i class="fa-solid fa-key"></i> Clé API</a>
     <a data-panel="report"><i class="fa-solid fa-user-shield"></i> Signaler un utilisateur</a>
     <a data-panel="delete"><i class="fa-solid fa-trash"></i> Supprimer un serveur</a>
     <a href="cgu.html"><i class="fa-solid fa-file-contract"></i> Conditions d'utilisation</a>
@@ -116,7 +171,12 @@
 
   <div class="content">
 
-    <div class="panel active" id="panel-key">
+    <div class="panel active" id="panel-annonces">
+      <h2>Annonces</h2>
+      <div id="posts-feed" class="posts-feed"></div>
+    </div>
+
+    <div class="panel" id="panel-key">
       <h2>Clé API</h2>
       <p class="desc">Une clé n'est valable que pour ce service.</p>
 
@@ -195,6 +255,124 @@
 const PLUTON_URL = "https://glitch-wbfo.onrender.com";
 
 if(!localStorage.getItem('gs_session')){ window.location.href = "login.html"; }
+const sessionToken = localStorage.getItem('gs_session');
+const SERVICE_NAME = "glitch";
+
+async function chargerAnnonces(){
+  const res = await fetch(PLUTON_URL + '/api/posts/list', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({service: SERVICE_NAME})
+  });
+  const data = await res.json();
+  const feed = document.getElementById('posts-feed');
+  feed.innerHTML = '';
+  if(!data.success || data.posts.length === 0){
+    feed.innerHTML = '<p style="color:var(--text-dim); font-size:14px;">Aucune annonce pour l\'instant.</p>';
+    return;
+  }
+  data.posts.forEach((p, i)=>{
+    const card = document.createElement('div');
+    card.className = 'post-card';
+    card.style.animationDelay = (i * 0.08) + 's';
+
+    const badgeHtml = p.admin_badge ? '<span class="post-admin-badge"><i class="fa-solid fa-check"></i></span>' : '';
+
+    if(p.type === 'release'){
+      card.innerHTML = `
+        <div class="release-head">
+          <div class="release-icon"><i class="fa-solid fa-terminal"></i></div>
+          <div>
+            <div class="post-title">${p.title}</div>
+            <div class="release-version">Version ${p.version || '—'}</div>
+          </div>
+        </div>
+        <div class="post-body">${p.body}</div>
+        <div class="rating-line">
+          <span class="stars" data-post="${p.id}">${etoilesHtml(0)}</span>
+          <span>${p.note_moyenne !== null ? p.note_moyenne + ' / 5 (' + p.nb_notes + ')' : 'Pas encore noté'}</span>
+        </div>
+        <a class="btn-download" href="${p.apk_link}" target="_blank" rel="noopener">
+          <i class="fa-solid fa-download"></i> Télécharger
+        </a>
+        <div class="post-header" style="margin-top:14px;">
+          <span class="cu">${p.admin_username}</span>${badgeHtml}
+          <span class="post-date">${p.created_at}</span>
+        </div>
+        <div class="comments-toggle" onclick="toggleComments(${p.id})">💬 Commentaires</div>
+        <div class="comments-box" id="comments-${p.id}"></div>
+      `;
+    } else {
+      card.innerHTML = `
+        <div class="post-header">
+          <span class="cu">${p.admin_username}</span>${badgeHtml}
+          <span class="post-date">${p.created_at}</span>
+        </div>
+        <div class="post-title">${p.title}</div>
+        <div class="post-body">${p.body}</div>
+        <div class="comments-toggle" onclick="toggleComments(${p.id})">💬 Commentaires</div>
+        <div class="comments-box" id="comments-${p.id}"></div>
+      `;
+    }
+    feed.appendChild(card);
+  });
+
+  // Étoiles interactives, posées après insertion dans le DOM
+  document.querySelectorAll('.stars').forEach(starBox=>{
+    const postId = starBox.dataset.post;
+    starBox.querySelectorAll('i').forEach((star, idx)=>{
+      star.addEventListener('click', async ()=>{
+        starBox.querySelectorAll('i').forEach((s,i2)=>s.classList.toggle('filled', i2 <= idx));
+        await fetch(PLUTON_URL + '/api/posts/rate', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({session_token: sessionToken, post_id: parseInt(postId), stars: idx+1})
+        });
+      });
+    });
+  });
+}
+
+function etoilesHtml(nbRemplies){
+  let html = '';
+  for(let i=0;i<5;i++) html += `<i class="fa-solid fa-star${i < nbRemplies ? ' filled' : ''}"></i>`;
+  return html;
+}
+
+async function toggleComments(postId){
+  const box = document.getElementById('comments-' + postId);
+  const estOuvert = box.classList.contains('open');
+  if(estOuvert){ box.classList.remove('open'); return; }
+
+  const res = await fetch(PLUTON_URL + '/api/posts/comments', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({post_id: postId})
+  });
+  const data = await res.json();
+  let html = '';
+  (data.comments || []).forEach(c=>{
+    html += `<div class="comment-item"><span class="cu">${c.username}</span><span class="ct">${c.comment}</span></div>`;
+  });
+  html += `<div class="comment-input-row">
+    <input type="text" id="new-comment-${postId}" placeholder="Écrire un commentaire...">
+    <button onclick="envoyerCommentaire(${postId})">Envoyer</button>
+  </div>`;
+  box.innerHTML = html;
+  box.classList.add('open');
+}
+
+async function envoyerCommentaire(postId){
+  const input = document.getElementById('new-comment-' + postId);
+  const comment = input.value.trim();
+  if(!comment) return;
+  await fetch(PLUTON_URL + '/api/posts/comment', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({session_token: sessionToken, post_id: postId, comment})
+  });
+  input.value = '';
+  document.getElementById('comments-' + postId).classList.remove('open');
+  toggleComments(postId);
+}
+
+chargerAnnonces();
 
 // --- Navigation latérale (pas d'onglets, pas le navigateur) ---
 document.querySelectorAll('.sidebar a[data-panel]').forEach(a=>{
